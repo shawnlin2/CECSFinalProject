@@ -1,6 +1,6 @@
 from mongoengine import *
 
-from Course import Course
+from InMongo.Course import Course
 
 
 class Student(Document):

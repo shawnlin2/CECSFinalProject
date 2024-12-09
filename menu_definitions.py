@@ -10,6 +10,15 @@ menu_main = Menu('main', 'Please select one of the following options:', [
     Option("Exit", "pass")
 ])
 
+menu_mainME = Menu('main', 'Please select one of the following options:', [
+    Option("Add new instance", "add(sess)"),
+    Option("Delete existing instance", "delete(sess)"),
+    Option("List existing instances", "list_members(sess)"),
+    Option("Select existing instance", "select(sess)"),
+    Option("Update existing instance", "update(sess)"),
+    Option("Exit", "pass")
+])
+
 #Add Instances
 add_select = Menu('add select', 'Which type of object do you want to add?:', [
     Option("Building", "add_building(sess)"),

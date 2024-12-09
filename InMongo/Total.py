@@ -1,5 +1,5 @@
 from mongoengine import *
-from Catalog import Catalog
+from InMongo.Catalog import Catalog
 
 class Total(Catalog):
     remainingUnits = IntField(db_field='remaining_units', min_value=1, max_value=50, required=True)

@@ -1,5 +1,5 @@
 from mongoengine import *
-from Catalog import Catalog
+from InMongo.Catalog import Catalog
 
 class Exclusive(Catalog):
     
