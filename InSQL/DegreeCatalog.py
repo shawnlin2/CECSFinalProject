@@ -1,23 +1,15 @@
-from mongoengine import *
+from sqlalchemy import *
+from sqlalchemy.orm import *
+from orm_base import Base
+from Department import Department
+class DegreeCatalog(Base):
+    type = mapped_column('type', String(80), 
+                         CheckConstraint('LENGTH(type) > 0', name = 'Degree_Catalog_type'), nullable=False, 
+                         primary_key= True)
+    abbreviation = mapped_column('abbreviation', String(16), CheckConstraint('LENGTH(abbreviation) > 2', name = 'Degree_Catalog_abbreviation'), nullable= False)
+    department = relationship(back_populates= 'degreeCatalog')
+    catalog = relationship(back_populates= 'degreeCatalog', passive_deletes= 'all')
+    
 
-class DegreeCatalog(Document):
-    """What Degrees are available within what department ensuring Data Integrity"""
-    degree_choices = (
-        (1,'Bachelor'),
-        (2,'Master'),
-    )
+    __table_args__ = (ForeignKeyConstraint([department], [Department.abbreviation]),)
 
-    degree_type = IntField(required= True, choices=degree_choices)
-    department = ReferenceField('Department', required=True, reverse_delete_rule=CASCADE)
-    degreeProgramName = StringField(required=True, unique=True, max_length=100)
-
-    meta = {
-        'collection': 'degree_program',
-        'indexes': [
-            'degree_type', 
-            'department',
-        ]
-    }
-
-    def __str__(self):
-        return f'{self.degree_type}, Department {self.department}, Degree Program Name {self.degreeProgramName} '
