@@ -13,7 +13,8 @@ class Course(Base):
     department = relationship(back_populates= 'course')
     abbreviation = mapped_column('abbreviation',String(16), CheckConstraint('LENGTH(name) > 3'),
                                  nullable= False, primary_key= True)
-    __table_args__ = (ForeignKeyConstraint([abbreviation], [Department.abbreviation]))
+    __table_args__ = (ForeignKeyConstraint([abbreviation], [Department.abbreviation]),)
+    
     def __init__(self, num, lectureHour, name, unit, isUpper, courseCatolog, abbreviation, **kwargs):
         super().__init__(**kwargs)
         self.num = num

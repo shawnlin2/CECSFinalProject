@@ -3,6 +3,7 @@ from sqlalchemy.orm import *
 from Catalog import Catalog
 
 class Exclusive(Catalog):
+    __mapper_args__ = {'polymorphic_identity': 'exclusive'}
     def __init__(self, title, **kwargs):
         super().__init__(title, **kwargs)
 
