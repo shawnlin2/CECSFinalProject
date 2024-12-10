@@ -6,7 +6,8 @@ class Department(Base):
                                  nullable= False, primary_key= True)
     name = mapped_column('name', String(80), CheckConstraint('LENGTH(name) > 3'), nullable= False)
     __table_args__ = (UniqueConstraint('name', name= 'department_uk_01'))
-    degreeCatologies = relationship(back_populates= 'department', passive_deletes= 'all')
+    degreeCatalogs = relationship(back_populates= 'department', passive_deletes= 'all')
+    course = relationship(back_populates='department', passive_deletes = 'all')
     def __init__ (self, name, abbreviation, **kwargs):
         super().__init__(**kwargs)
         self.name = name
