@@ -26,4 +26,5 @@ class Course(Base):
         self.abbreviation = abbreviation
     
     def __str__(self):
-        return f''
+        return f'Course: {self.abbreviation} {self.num}'
+    
