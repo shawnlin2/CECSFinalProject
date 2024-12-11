@@ -1,50 +1,40 @@
-from mongoengine import *
-from Department import Department
+from mongoengine import Document, IntField, StringField, BooleanField, ReferenceField, ValidationError
 
 class Course(Document):
-    """Course Offered within a Department and in line with a Degree Catalog
-     Ensures that a student takes classes that they need to take an avoid taking
-     classes that they do not need"""
+    """Course Offered within a Department and in line with a Degree Catalog."""
 
-    #The number of the Course
+    # The number of the Course
     courseNum = IntField(min_value=10, max_value=999, primary_key=True)
 
-    #The length of the Lecture
-    lectureHour = IntField(required= True)
+    # The length of the Lecture
+    lectureHour = IntField(required=True)
 
-    #The name of the course
+    # The name of the course
     courseName = StringField(min_length=3, max_length=60, required=True)
 
-    #The units the course is worth
-    unit = IntField(min_value=1,  max_value=5, required=True)
+    # The units the course is worth
+    unit = IntField(min_value=1, max_value=5, required=True)
 
-    #Department that offers said course
-    department = ReferenceField('Department', required=True, reverse_delete_rule=2)
+    # Department that offers said course
+    department = ReferenceField('Department', required=True)
 
-    isUpperDivision = BooleanField(required=True)
-
-
-
-
+    @property
+    def isUpperDivision(self):
+        """Determine if the course is upper-division based on course number."""
+        return self.courseNum >= 300
 
     def clean(self):
-        """This is just ensuring the course number is between a required amount, this is called & Units are the correct amount
-        when you call a .save( ) mongo engine will automatically run this clean method, this is to check the numbies
-        for the course number are valid."""
+        """Ensure that the course number and units are within valid ranges."""
+        if not (10 <= self.courseNum <= 999):
+            raise ValidationError(
+                f"Error: the course number must be between 10 and 999, the number entered was {self.courseNum}"
+            )
+        if not (1 <= self.unit <= 5):
+            raise ValidationError(
+                f"Error: the number of units must be between 1 and 5, the units you entered were {self.unit}"
+            )
 
-        if( 10 < self.courseNum > 9999):
-            raise ValidationError(f"Error the course number must be between 10 and 9999, the number entered was {self.courseNum}")
-
-        if(0 <= self.unit >5):
-            raise ValidationError(f"Error the number of units must be between 1 - 5 units, the units you entered were {self.unit}")
-
-
-        #If the courseNum is greater than 300 returns True, else returns False, and we don't have to promprt
-        #User for any info since its solely based off of the courseNumber
-        self.isUpperDivision = self.courseNum >= 300
-
-
-    def __init__ (self, courseNum, lectureHour,courseName,unit, department, **kwargs):
+    def __init__(self, courseNum, lectureHour, courseName, unit, department, **kwargs):
         super().__init__(**kwargs)
         self.courseNum = courseNum
         self.lectureHour = lectureHour
@@ -52,7 +42,9 @@ class Course(Document):
         self.unit = unit
         self.department = department
 
-
     def __str__(self):
-        return f'Course {self.courseName}, Course number {self.courseNum}, Hours of lecture {self.lectureHour}, Number of units {self.unit}, Department of {self.department.abbreviation} '
-
+        return (
+            f"Course: {self.courseName}, Course number: {self.courseNum}, "
+            f"Lecture hours: {self.lectureHour}, Units: {self.unit}, "
+            f"Department: {self.department.abbreviation if self.department else 'None'}"
+        )
