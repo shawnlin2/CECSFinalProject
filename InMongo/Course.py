@@ -1,4 +1,5 @@
 from mongoengine import *
+from Department import Department
 
 class Course(Document):
     """Course Offered within a Department and in line with a Degree Catalog
@@ -6,22 +7,21 @@ class Course(Document):
      classes that they do not need"""
 
     #The number of the Course
-    courseNum = IntField(required= True)
-
+    courseNum = IntField(min_value=10, max_value=999, primary_key=True)
 
     #The length of the Lecture
     lectureHour = IntField(required= True)
 
     #The name of the course
-    courseName = StringField(min_length=3, max_length=60, required=True, unique=True)
+    courseName = StringField(min_length=3, max_length=60, required=True)
 
     #The units the course is worth
-    unit = IntField(required=True)
+    unit = IntField(min_value=1,  max_value=5, required=True)
 
     #Department that offers said course
-    department = ReferenceField('Department', required=True)
+    department = ReferenceField('Department', required=True, reverse_delete_rule=2)
 
-    isUpperDivision = BooleanField()
+    isUpperDivision = BooleanField(required=True)
 
 
 
@@ -54,5 +54,5 @@ class Course(Document):
 
 
     def __str__(self):
-        return f'Course {self.courseName}, Course number {self.courseNum}, Hours of lecture {self.lectureHour}, Number of units {self.unit}, Department of {self.course.department.name} '
+        return f'Course {self.courseName}, Course number {self.courseNum}, Hours of lecture {self.lectureHour}, Number of units {self.unit}, Department of {self.department.abbreviation} '
 
