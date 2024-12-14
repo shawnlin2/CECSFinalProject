@@ -2,14 +2,6 @@ from Menu import Menu
 from Option import Option
 
 #Main menu
-menu_main = Menu('main', 'Please select one of the following options:', [
-    Option("Add new instance", "add(sess)"),
-    Option("Delete existing instance", "delete(sess)"),
-    Option("List existing instances", "list_members(sess)"),
-    Option("Update existing instance", "update(sess)"),
-    Option("Exit", "pass")
-])
-
 menu_mainME = Menu('main', 'Please select one of the following options:', [
     Option("Add new instance", "add(sess)"),
     Option("Delete existing instance", "delete(sess)"),
@@ -21,19 +13,18 @@ menu_mainME = Menu('main', 'Please select one of the following options:', [
 
 #Add Instances
 add_select = Menu('add select', 'Which type of object do you want to add?:', [
-    Option("Building", "add_building(sess)"),
-    Option("A Shared Room Office", "add_shared_room(sess)"),
-    Option("A Single Room Office", "add_single_room(sess)"),
-    Option("Full Time Instructor", "add_full_timer(sess)"),
-    Option("Part Time Instructor", "add_part_timer(sess)"),
+    Option("Department", "add_department(sess)"),
+    Option("Course", "add_course(sess)"),
+    Option("Catalog", "add_degreeCatalog(sess)"),
+    Option("Course Requirement", "add_CourseRequirement(sess)"),
     Option("Exit", "pass")
 ])
 
 #Delete Instances
 delete_select = Menu('delete select', 'Which type of object do you want to delete?:', [
-    Option("Building", "delete_building(sess)"),
-    Option("A Shared Room Office", "delete_shared_room(sess)"),
-    Option("A Single Room Office", "delete_single_room(sess)"),
+    Option("Department", "delete_department(sess)"),
+    Option("Course", "delete_course(sess)"),
+    Option("Degree Catalog", "delete_degree_catalog(sess)"),
     Option("Full Time Instructor", "delete_full_timer(sess)"),
     Option("Part Time Instructor", "delete_part_timer(sess)"),
     Option("Exit", "pass")
@@ -41,13 +32,26 @@ delete_select = Menu('delete select', 'Which type of object do you want to delet
 
 # List Instructuors In an Office
 list_select = Menu('list select', 'Which type of object do you want to list?:', [
-    Option("Instructors In Office", "list_employee_in_office(sess)"),
+    Option("Departments", "list_departments(sess)"),
+    Option("Courses", "list_courses(sess)"),
+    Option("Degree Catalogs", "list_degree_catalogs(sess)")
+
+
 ])
+
+# Select instances
+select_select = Menu('select select', 'Which type of object do you want to select:', [
+    Option("Departments", "print(select_department(sess))"),
+    Option("Courses", "print(select_course(sess))"),
+    Option("Degree Catalogs", "print(select_degree_catalogs(sess))"),
+    Option("Exit", "pass")
+])
+
 
 # Updating Instances
 update_select = Menu('update select', 'Which type of object do you want to update:', [
-    Option("Update Building", "update_building_name(sess)"),
-    Option("Update Instructor Name", "update_instructor_name(sess)"),
+    Option("Update Department", "update_department(sess)"),
+    Option("Update Course", "update_course(sess)"),
     Option("Exit", "pass")
 ])
 

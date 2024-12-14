@@ -8,7 +8,7 @@ class DegreeCatalog(Base):
                          primary_key= True)
     abbreviation = mapped_column('abbreviation', String(16), CheckConstraint('LENGTH(abbreviation) > 2', name = 'Degree_Catalog_abbreviation'), nullable= False)
     department = relationship(back_populates= 'degreeCatalog')
-    catalogRequirement = relationship(back_populates='degreeCatalog', passive_deletes= 'all')
+    catalogRequirement = relationship(back_populates='degreeCatalog')
 
     __table_args__ = (ForeignKeyConstraint([department], [Department.abbreviation]),)
 

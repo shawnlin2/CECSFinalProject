@@ -5,8 +5,8 @@ from Catalog import Catalog
 from Course import Course
 
 class CatalogCourse(Document):
-    catalog = ReferenceField(Catalog, reverse_delete_rule=2)
-    course = ReferenceField(Course, reverse_delete_rule=2)
+    # catalog = ReferenceField('Catalog', reverse_delete_rule=2)
+    course = ReferenceField('Course')
     title = StringField(min_length=10, max_length=30, required=True, unique=True)
     name = StringField(min_length=8 ,max_length=80, required= True, unique=True)
 
