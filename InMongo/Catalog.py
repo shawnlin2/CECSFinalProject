@@ -1,4 +1,3 @@
-from fontTools.feaLib.ast import LookupReferenceStatement
 from mongoengine import *
 from CourseRequirement import CourseRequirement
 from CatalogCourse import CatalogCourse
@@ -6,8 +5,8 @@ from CatalogCourse import CatalogCourse
 class Catalog(Document):
     title = StringField( min_length=0, max_length=30, required=True)
     catalog_type = StringField(required=True, max_length=80)
-    course_requirements = ListField(ReferenceField(CourseRequirement,reverse_delete_rule=CASCADE))
-    catalog_courses = ListField(ReferenceField(CatalogCourse,reverse_delete_rule=CASCADE))
+    course_requirements = ListField(ReferenceField(CourseRequirement, reverse_delete_rule=CASCADE))
+    catalog_courses = ListField(ReferenceField('CatalogCourse'))
 
     def __init__(self, title, catalog_type,course_requirements = None,catalog_courses = None, *args, **kwargs):
         super(self).__init__(**kwargs)

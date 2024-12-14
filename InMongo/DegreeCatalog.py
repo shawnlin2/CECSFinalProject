@@ -3,15 +3,15 @@ from mongoengine import *
 
 from Department import Department
 
-from Requirements import Requirements
+
 
 class DegreeCatalog(Document):
     """What is Required to take a course"""
     degree_type = StringField(min_length=10, max_length=80, required=True)
 
     abbreviation = StringField(min_length=6,max_length=16, required=True)
-    department = ReferenceField(Department, reverse_delete_rule=2)
-    catalog_requirements = ListField(ReferenceField(Requirements, reverse_delete_rule=2))
+    department = ReferenceField(Department, reverse_deleted = 2)
+    catalog_requirements = ListField(ReferenceField('CourseRequirements'))
 
 
 

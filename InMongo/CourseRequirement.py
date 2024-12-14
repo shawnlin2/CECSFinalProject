@@ -7,6 +7,7 @@ class CourseRequirement(Document):
     name = StringField(max_length=80, unique=True, required=True)
     degree_type = StringField(max_length=80, required=True)
     degree_catalog = ReferenceField(DegreeCatalog, reverse_delete_rule=2)
+    catalog = ListField(ReferenceField('Catalog'))
 
     def __init__(self, total_points, name, degree_type, degree_catalog, **kwargs):
         super().__init__(**kwargs)
