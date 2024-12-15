@@ -5,10 +5,10 @@ from Catalog import Catalog
 from Course import Course
 
 class CatalogCourse(Document):
-    # catalog = ReferenceField('Catalog', reverse_delete_rule=2)
-    course = ReferenceField('Course')
-    title = StringField(min_length=10, max_length=30, required=True, unique=True)
-    name = StringField(min_length=8 ,max_length=80, required= True, unique=True)
+    catalog = ReferenceField('Catalog', reverse_delete_rule=2)
+    course = ReferenceField('Course', reverse_delete_rule = 2)
+    title = StringField('title',min_length=10, max_length=30, required=True, unique=True)
+    name = StringField('name', min_length=8 ,max_length=80, required= True, unique=True)
 
     def clean(self):
         if len(self.title) == 0:
