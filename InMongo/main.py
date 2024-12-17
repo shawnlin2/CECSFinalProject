@@ -4,7 +4,7 @@ from datetime import date
 from mongoengine import NotUniqueError, OperationError, ValidationError
 from pymongo.client_session import ClientSession
 
-from InMongo.Catalog import Catalog
+from Catalog import Catalog
 from InMongo.CourseRequirement import CourseRequirement
 from menu_definitions import (menu_mainME, add_select, delete_select, list_select, select_select,
                               update_select, debug_select,

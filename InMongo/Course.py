@@ -1,5 +1,4 @@
-from mongoengine import Document, IntField, StringField, BooleanField, ReferenceField, ValidationError
-
+from mongoengine import *
 class Course(Document):
     """Course Offered within a Department and in line with a Degree Catalog."""
 
@@ -16,7 +15,9 @@ class Course(Document):
     unit = IntField(min_value=1, max_value=5, required=True)
 
     # Department that offers said course
-    department = ReferenceField('Department', required=True)
+    department = ReferenceField('Department', required=True, reverse_delete_rule=2)
+
+    courseRequirement = ListField(ReferenceField('CourseRequiremet'))
 
     @property
     def isUpperDivision(self):
