@@ -18,7 +18,7 @@ class CatalogCourse(Document):
     meta = {
             "collection": "course_requirements",
             "indexes":[
-                {"fields":["degreeType", 'requirementType', 'course_requirementName', 'title', 'abbreviation', 'courseNum' ],
+                {"fields":["degreeType", 'course_requirementName', 'title', 'abbreviation', 'courseNum' ],
                 "name":"requirement_types_pk",
                 "unique": True
                 

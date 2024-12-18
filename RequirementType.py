@@ -1,7 +1,5 @@
 from mongoengine import*
 
-from CourseRequirement import CourseRequirement
-
 class RequirementType(Document):
     name = StringField(min_length=10, max_length=80, unique=True)
     course_requirements = ListField(ReferenceField('CourseRequirement'))

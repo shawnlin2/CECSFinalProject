@@ -14,7 +14,7 @@ class DegreeCatalog(Document):
     meta = {
             "collection": "degree_catalogs",
             "indexes":[
-                {"fields":["name"],
+                {"fields":["degree_type"],
                 "name":"degree_catalogs_pk",
                 "unique": True
                 
