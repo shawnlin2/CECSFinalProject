@@ -16,8 +16,19 @@ class Course(Document):
 
     # Department that offers said course
     department = ReferenceField('Department', required=True, reverse_delete_rule=2)
+    abbreviation = StringField(min_length=1, max_length=16, required=True)
 
-    courseRequirement = ListField(ReferenceField('CourseRequiremet'))
+    course_catologs = ListField(ReferenceField('CatalogCourse'))
+    meta = {
+            "collection": "courses",
+            "indexes":[
+                {"fields":["abbreviation", 'courseNum'],
+                "name":"courses_pk",
+                "unique": True
+                
+                }
+            ]
+           }
 
     @property
     def isUpperDivision(self):
@@ -35,13 +46,14 @@ class Course(Document):
                 f"Error: the number of units must be between 1 and 5, the units you entered were {self.unit}"
             )
 
-    def __init__(self, courseNum, lectureHour, courseName, unit, department, **kwargs):
+    def __init__(self, courseNum, lectureHour, courseName, unit, department, abbreviation, **kwargs):
         super().__init__(**kwargs)
         self.courseNum = courseNum
         self.lectureHour = lectureHour
         self.courseName = courseName
         self.unit = unit
         self.department = department
+        self.abbreviation = abbreviation
 
     def __str__(self):
         return (
@@ -49,3 +61,9 @@ class Course(Document):
             f"Lecture hours: {self.lectureHour}, Units: {self.unit}, "
             f"Department: {self.department.abbreviation if self.department else 'None'}"
         )
+    def add_course_catalog(self, course_catalog):
+        self.course_catologs.append(course_catalog)
+    
+    def remove_course_catallog(self, course_catalog):
+        self.course_catologs.remove(course_catalog)
+    

@@ -1,8 +1,9 @@
 from mongoengine import*
 from DegreeCatalog import DegreeCatalog
+from RequirementType import RequirementType
 class CourseRequirement(Document):
     total_points = IntField(min_value=1, max_value=100, required=True)
-    name = StringField(max_length=80, unique=True, required=True)
+    name = StringField(min_length = 1, max_length=80, unique=True, required=True)
     '''The thing I think we need to fix here is that if we're already referencing the degree catalog thus I dont think we need
     the degree type in here since can pull it from degree catalog thus I dont think it should be in the init either lmk
     what yall think ?'''
@@ -11,14 +12,29 @@ class CourseRequirement(Document):
     key of degreeCatalog'''
     
     abbreviation = StringField(min_length=1,max_length=16, required=True)
-    degree_catalog = ReferenceField(DegreeCatalog, reverse_delete_rule=2)
-    catalog = ListField(ReferenceField('Catalog'))
-
-    def __init__(self, total_points, name, degree_catalog, **kwargs):
+    degreeCatalog = ReferenceField(DegreeCatalog, reverse_delete_rule=2)
+    catalogs = ListField(ReferenceField('Catalog'))
+    degreeType = StringField(min_length=10, max_length=80, required=True)
+    requirementType = ReferenceField(RequirementType, reverse_delete_rule= 2 )
+    requirementTypeName = StringField(min_length=10, max_length=80)
+    meta = {
+            "collection": "course_requirements",
+            "indexes":[
+                {"fields":["degreeType", 'requirementType', 'name'],
+                "name":"requirement_types_pk",
+                "unique": True
+                
+                }
+            ]
+           }
+    def __init__(self, total_points, name, degreeCatalog, degreeType, requirementType, requirementTypeName, **kwargs):
         super().__init__(**kwargs)
         self.total_points = total_points
         self.name = name
-        self.degree_catalog = degree_catalog
+        self.degreeCatalog = degreeCatalog
+        self.degreeType = degreeType
+        self.requirementType = requirementType
+        self.requirementTypeName = requirementTypeName
 
     def clean(self):
         if len(self.name) == 0:
@@ -26,3 +42,10 @@ class CourseRequirement(Document):
 
     def __str__(self):
         return f'Course Requirement: {self.name}, Degree Type: {self.degree_catalog.degree_type}, Total Points:  {self.total_points}'
+
+    def add_catalog(self, catalog):
+        self.catalogs.append(catalog)
+    
+    def remove_catalog(self, catalog):
+        self.catalogs.remove(catalog)
+    

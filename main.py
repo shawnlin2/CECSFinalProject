@@ -4,8 +4,7 @@ from datetime import date
 from mongoengine import NotUniqueError, OperationError, ValidationError
 from pymongo.client_session import ClientSession
 
-from Catalog import Catalog
-from InMongo.CourseRequirement import CourseRequirement
+
 from menu_definitions import (menu_mainME, add_select, delete_select, list_select, select_select,
                               update_select, debug_select,
                               yes_no)
@@ -16,7 +15,8 @@ from CommandLogger import CommandLogger, log
 from pymongo import monitoring, MongoClient
 from Department import Department
 from Course import Course
-
+from Catalog import Catalog
+from CourseRequirement import CourseRequirement
 from DegreeCatalog import *
 from input_utilities import *
 
@@ -69,28 +69,33 @@ def add_department(session: Session):
         abbreviation = input("Enter department's abbreviation -->")
 
         try:
-            department = Department(name, abbreviation,)
+            department = Department(name, abbreviation)
             department.save()
             valid = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')
 
 def add_course(session: Session):
     valid: bool = False
     while not valid:
         department = select_department(session)
-        department.save()
         course_num = input_int("Enter course number -->")
         course_name = input("Enter course name -->")
         units = input_int("Enter amount of units -->")
         lecture_hours = input_int("Enter number of lecture hours per week -->")
 
         try:
-            course = Course(course_num, lecture_hours, course_name, units, department)
+            course = Course(course_num, lecture_hours, course_name, units, department, department.abbreviation)
             course.save()
+            department.add_course(course)
+            department.save()
             valid = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')     
 
 def add_degreeCatalog(session: Session):
     valid: bool = False
@@ -266,7 +271,8 @@ if __name__ == '__main__':
     print('Starting in main.')
     # client = pymongo.MongoClient('mongodb+srv://eduardomartinez215:Supertruck1!@323-fall.kchj8.mongodb.net/?retryWrites=true&w=majority&appName=323-Fall', tlsCAFile=certifi.where())
     monitoring.register(CommandLogger())
-    mongoengine.connect('Demonstration', host='mongodb+srv://eduardomartinez215:Supertruck1!@323-fall.kchj8.mongodb.net/?retryWrites=true&w=majority&tlsInsecure=true&appName=323-Fall')
+    mongoengine.connect('Demonstration', host='mongodb+srv://shawnlin26:QkPN3GaNpM7blXXr@cluster0.rndwk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+
     db = mongoengine.connection.get_db()
     """This actually initiates a session at the PyMongo layer of the software architecture, but
     I cannot get MongoEngine to actually use it.  So I'm paving the way to do that eventually 

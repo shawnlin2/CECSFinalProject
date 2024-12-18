@@ -9,8 +9,18 @@ class DegreeCatalog(Document):
 
     abbreviation = StringField(min_length=1,max_length=16, required=True)
     department = ReferenceField(Department, reverse_delete_rule= 2)
-    catalog_requirements = ListField(ReferenceField('Requirements'))
+    course_requirements = ListField(ReferenceField('Requirements'))
 
+    meta = {
+            "collection": "degree_catalogs",
+            "indexes":[
+                {"fields":["name"],
+                "name":"degree_catalogs_pk",
+                "unique": True
+                
+                }
+            ]
+           }
 
     def __init__ (self, degree_type, department,total_units, **kwargs):
         super().__init__(**kwargs)
@@ -23,5 +33,9 @@ class DegreeCatalog(Document):
     def __str__(self):
         return f'Degree Type {self.degree_type}, Abbreviation {self.department.abbreviation}, Department {self.department.name}'
 
-
+    def add_course_requirement(self, courseRequirement):
+        self.course_requirements.append(courseRequirement)
+    
+    def remove_course_requirement(self, courseRequirement):
+        self.course_requirements.remove(courseRequirement)
 
