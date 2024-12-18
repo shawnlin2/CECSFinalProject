@@ -4,8 +4,7 @@ from datetime import date
 from mongoengine import NotUniqueError, OperationError, ValidationError
 from pymongo.client_session import ClientSession
 
-from Catalog import Catalog
-from InMongo.CourseRequirement import CourseRequirement
+
 from menu_definitions import (menu_mainME, add_select, delete_select, list_select, select_select,
                               update_select, debug_select,
                               yes_no)
@@ -16,8 +15,14 @@ from CommandLogger import CommandLogger, log
 from pymongo import monitoring, MongoClient
 from Department import Department
 from Course import Course
-
+from Catalog import Catalog
+from RequirementType import RequirementType
+from CourseRequirement import CourseRequirement
 from DegreeCatalog import *
+from CatalogCourse import CatalogCourse
+from Exclusive import Exclusive
+from Inclusive import Inclusive
+from Total import Total
 from input_utilities import *
 
 import mongoengine
@@ -69,28 +74,33 @@ def add_department(session: Session):
         abbreviation = input("Enter department's abbreviation -->")
 
         try:
-            department = Department(name, abbreviation,)
+            department = Department(name, abbreviation)
             department.save()
             valid = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')
 
 def add_course(session: Session):
     valid: bool = False
     while not valid:
         department = select_department(session)
-        department.save()
         course_num = input_int("Enter course number -->")
         course_name = input("Enter course name -->")
         units = input_int("Enter amount of units -->")
         lecture_hours = input_int("Enter number of lecture hours per week -->")
 
         try:
-            course = Course(course_num, lecture_hours, course_name, units, department)
+            course = Course(course_num, lecture_hours, course_name, units, department, department.abbreviation)
             course.save()
+            department.add_course(course)
+            department.save()
             valid = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')     
 
 def add_degreeCatalog(session: Session):
     valid: bool = False
@@ -100,13 +110,16 @@ def add_degreeCatalog(session: Session):
         degreeType = input("Enter the title of the degree")
         totalUnits = input_int("How many units are Required for this Degree")
 
-
         try:
-            catalog = DegreeCatalog(degree_type=degreeType,total_units=totalUnits,department=department)
+            catalog = DegreeCatalog(degree_type=degreeType,total_units=totalUnits,department=department, abbreviation= department.abbreviation)
             catalog.save()
+            department.add_degreeCatalog(catalog)
+            department.save()
             valid=True
         except NotUniqueError as NUID:
-            print(f'You violated a uniquenss constrains: {NUID} Try again')
+            print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')   
 
 def add_CourseRequirement(session:Session):
     valid: bool = False
@@ -116,33 +129,139 @@ def add_CourseRequirement(session:Session):
         requirement_name = input("Enter the name of the requirement")
         total_points = input("Enter how many points the requirement is")
         try:
-            courseRequirement = CourseRequirement(total_points=total_points, name=requirement_name,degree_catalog=degreeCat)
+            courseRequirement = CourseRequirement(total_points=total_points, name=requirement_name,degree_catalog=degreeCat, degreeType= degreeCat.degreeType)
             courseRequirement.save()
+            degreeCat.add_course_requirement()
+            degreeCat.save()
             valid = True
         except NotUniqueError as NUID:
-            print(f'You violated a uniquenss constrains {NUID} try again')
+            print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')   
+def add_requirementType(session:Session):
+    valid: bool = False
+    while not valid:
+        requirement_name = input("Enter the name of the requirement")
+        try:
+            requirementType = RequirementType(name=requirement_name)
+            requirementType.save()
+            valid = True
+        except NotUniqueError as NUID:
+            print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')   
+
+
+def add_Catalog(session:Session):
+    vaild = False
+    while not vaild:
+        course_requirement = select_courseRequirement(Session)
+        title = input("Enter a name")
+        catalogType = input_int_range('Enter 1 for a Exclusive, 2 for an Inclusive, 3 for a Total')
+        try:
+            if catalogType == 1:
+                catalog = Exclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName)
+            if catalogType == 2:
+                catalog = Inclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName)
+            else:
+                remaingUnit = input_int('Enter an amount of unit left')
+                catalog = Exclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName
+                                                    , remaingUnit)
+            catalog.save()
+            course_requirement.add_catalog(catalog)
+            course_requirement.save()
+        except NotUniqueError as NUID:
+            print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')   
+
+def add_CatalogCourse(session:Session):
+    vaild = False
+    while not vaild:
+        course = select_course()
+        catalog = select_Catalog()
+
+        try:
+            catalogCourse = CatalogCourse(catalog, course,catalog.title, 
+                                          course.courseNum, course.abbreviation,
+                                          catalog.name, catalog.degreeType, 
+                                          catalog.requirementTypeName)
+            catalogCourse.save()
+            course.add_course_catalog(catalogCourse)
+            course.save()
+            catalog.add_catalog_course(catalogCourse)
+            course.save()
+        except NotUniqueError as NUID:
+            print(f'You violated a uniqueness constraint: {NUID}.  Try again')
+        except ValidationError as VEND:
+            print(f'You violated a validation constraint: {VEND}.')   
 
 
 def delete_department(session: Session):
     ok: bool = False
     while not ok:
         department: Department = select_department(session)
+        
+    
         pipeline = [
-            {"$match": {"abbreviation": department.abbreviation}}
+            {"$match": {"department": department.name}}
         ]
-        abbreviation_count = len(list(Department.objects().aggregate(pipeline)))
-        print(department)
-        try:
+        course_count: int = len(list(Course.objects().aggregate(pipeline)))
+        degree_count = len(list(DegreeCatalog.objects().aggregate(pipeline)))
+
+        if course_count > 0 or degree_count > 0:
+            print('Error, you cannot delete that department, there are child relationships to it.')
+        else:
             department.delete()
             ok = True
-            print(f'Department {department.name} deleted.')
-        except OperationError as VE:
-            print(f"Error: {VE}")
 
+def delete_department(session: Session):
+    ok: bool = False
+    while not ok:
+        department: Department = select_department(session)
+        
+    
+        pipeline = [
+            {"$match": {"department": department.name}}
+        ]
+        course_count: int = len(list(Course.objects().aggregate(pipeline)))
+        degree_count = len(list(DegreeCatalog.objects().aggregate(pipeline)))
 
+        if course_count > 0 or degree_count > 0:
+            print('Error, you cannot delete that department, there are child relationships to it.')
+        else:
+            department.delete()
+            ok = True
+
+#if this version doesn't work then replace with the above type of way 
 def delete_course(session: Session):
     course: Course = select_course(session)
-    course.delete()
+    if len(course.course_catologs) < 1:
+        course.delete()
+
+def delete_degreeCatalog(session: Session):
+    degreeCatalog = select_degree_catalogs(Session)
+    if len(degreeCatalog.course_requirement) < 1:
+        degreeCatalog.delete()
+
+def delete_catalog(session: Session):
+    catalog:Catalog = select_Catalog(Session)
+    if len(catalog.catalog_courses) < 1:
+        catalog.delete()
+
+def delete_course_requirement(session: Session):
+    courseRequirement:CourseRequirement = select_courseRequirement(Session)
+    if len(courseRequirement.catalogs) < 1:
+        courseRequirement.delete()
+
+def delete_catalogCourse(session:Session):
+    catalogCourse = select_catalogCourse()
+    catalogCourse.delete()
+
+def delete_requirementType(session: Session):
+    requirementType:RequirementType = select_requirementType(Session)
+    if len(requirementType.course_requirements) < 1:
+        requirementType.delete()
 
 def update_department(session: Session):
     department = select_department(session)
@@ -150,13 +269,44 @@ def update_department(session: Session):
     pipeline = [
         {"$match": {"department": department.name}}
     ]
-    child_count: int = len(list(Course.objects().aggregate(pipeline)))
+    course_count: int = len(list(Course.objects().aggregate(pipeline)))
+    degree_count = len(list(DegreeCatalog.objects().aggregate(pipeline)))
 
-    if child_count > 0:
-        print('Error, you cannot update that department, there are courses offered by it.')
+    if course_count > 0 or degree_count > 0:
+         print('Error, you cannot delete that department, there are child relationships to it.')
+         
     else:
         department.name = newName
         department.save()
+
+def update_course(session: Session):
+    course = select_department(session)
+    newName = input(f'Current name is: {course.name}.  Enter new name -->')
+    pipeline = [
+        {"$match": {"department": course.name}}
+    ]
+    child_count: int = len(list(CatalogCourse.objects().aggregate(pipeline)))
+
+    if child_count > 0:
+        print('Error, you cannot update that course, there are courseCatalog related to it.')
+    else:
+        course.name = newName
+        course.save()
+
+def update_courseRequirement(session: Session):
+    courseRequirement = select_courseRequirement(session)
+    newName = input(f'Current name is: {courseRequirement.name}.  Enter new name -->')
+    pipeline = [
+        {"$match": {"department": courseRequirement.name}}
+    ]
+    child_count: int = len(list(Catalog.objects().aggregate(pipeline)))
+
+    if child_count > 0:
+        print('Error, you cannot update that courseRequirement, there are catalogs that relate to it.')
+    else:
+        courseRequirement.name = newName
+        courseRequirement.save()
+
 
 def select_department(session: Session) -> Department:
     found: bool = False
@@ -181,7 +331,29 @@ def select_department(session: Session) -> Department:
     for department in Department.objects().aggregate(pipeline):
         return Department.objects(id=department.get('_id')).first()
 
+def select_requirementType(session: Session):
+    found: bool = False
+    while not found:
+        requirmentName = input('Enter a requirementName')
+        pipeline = [
+            {"$match": {"name": requirmentName}}
+        ]
+        name_count = len(list(RequirementType.objects().aggregate(pipeline)))
 
+        if name_count != 0:
+            found = True
+        else:
+            print("That department could not be found.  Try again.")
+    """
+    MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate 
+    function.  But I need the actual object to operate on.  The document includes the _id 
+    value, so I perform yet another query, but this time NOT using the aggregate pipeline,
+    to return just the first object that comes back from looking for the manufacturer by 
+    the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
+    knows the _id field as just 'id'."""
+    for requirementType in RequirementType.objects().aggregate(pipeline):
+        return RequirementType.objects(id=requirementType.get('_id')).first()
+    
 # def select_office(session:Session):
 #     print("Searching for that specific office:  ")
 #     buildingName = input("Enter the name of the building por favor: ")
@@ -197,7 +369,34 @@ def select_department(session: Session) -> Department:
 #             print("No office was found with thos details")
 #     except Exception as e:
 #         print(f"Error locating {e}")
+def select_courseRequirement(session: Session):
+    found: bool = False
+    while not found:
+        degreeType = input("Degree type of the course requirement that you're looking for-->")
+        requirementName = input("Enter a requirement name")
+        courseRequirementName = input("Enter a course requirement name")
+        pipeline = [
+            {"$match": {'$and':[{"degreeType": degreeType},
+                {'requirementTypeName' : requirementName},
+                {'name': courseRequirementName}]}
+             }
+        ]
+        courseRequirement_count = len(list(CourseRequirement.objects().aggregate(pipeline)))
 
+        if courseRequirement_count != 0:
+            found = True
+        else:
+            print("That department could not be found.  Try again.")
+    """
+    MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate 
+    function.  But I need the actual object to operate on.  The document includes the _id 
+    value, so I perform yet another query, but this time NOT using the aggregate pipeline,
+    to return just the first object that comes back from looking for the manufacturer by 
+    the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
+    knows the _id field as just 'id'."""
+    for courseRequirement in CourseRequirement.objects().aggregate(pipeline):
+        return CourseRequirement.objects(id=courseRequirement.get('_id')).first()
+    
 def select_course(session: Session):
     print("Searching for that specific course: ")
     department_name = input("Enter the department name --> ")
@@ -215,50 +414,87 @@ def select_course(session: Session):
         print(f"Error locating course: {e}")
 
 def select_degree_catalogs(session:Session):
-    print("Searching for a Degree Catalog")
-    department_name = input("Enter the Department")
-    degreeCat = input("Enter the Degree Type")
-    try:
-        department = Department.objects(name = department_name).first()
-        degreeCat = DegreeCatalog.objects(degree_type= degreeCat).first()
+    found: bool = False
+    while not found:
+        
+        degreetype = input('Enter a degree type')
+        pipeline = [
+            {"$match": {"degreeType": degreetype}}
+        ]
+        degreetype_count = len(list(DegreeCatalog.objects().aggregate(pipeline)))
 
-        if department and degreeCat:
-            print("Degree Catalog Found")
-            return degreeCat
+        if degreetype_count != 0:
+            found = True
         else:
-            print("No Degree Catalog was found")
-    except Exception as e:
-        print(f'Error Occured {e}')
+            print("That degreeCatalog could not be found.  Try again.")
+    """
+    MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate 
+    function.  But I need the actual object to operate on.  The document includes the _id 
+    value, so I perform yet another query, but this time NOT using the aggregate pipeline,
+    to return just the first object that comes back from looking for the manufacturer by 
+    the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
+    knows the _id field as just 'id'."""
+    for degreeCatalog in DegreeCatalog.objects().aggregate(pipeline):
+        return DegreeCatalog.objects(id=degreeCatalog.get('_id')).first()
 
 
-# def select_course(session: Session) -> Course:
-#     found: bool = False
-#     while not found:
-#         department = select_department(sess)
-#         course_num = input_int("Number of course you're looking for -->")
-#         pipeline = [
-#             {"$match": {"$and": [{"department": department.id},
-#                                  {"course_num": course_num},
-#                                  ]}}
-#         ]
-#         course_count = len(list(Course.objects().aggregate(pipeline)))
-#
-#         if course_count != 0:
-#             found = True
-#         else:
-#             print ("That course could not be found.  Try again.")
-#     """
-#     MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate
-#     function.  But I need the actual object to operate on.  The document includes the _id
-#     value, so I perform yet another query, but this time NOT using the aggregate pipeline,
-#     to return just the first object that comes back from looking for the manufacturer by
-#     the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
-#     knows the _id field as just 'id'."""
-#     for course in Course.objects().aggregate(pipeline):
-#         return Course.objects(id=course.get('_id')).first()
+def select_Catalog(session: Session):
+    found: bool = False
+    while not found:
+        courseRequirement = select_courseRequirement(Session)
+        title = input('Enter the title')
+        pipeline = [
+            {"$match": {"$and": [{"degreeType": courseRequirement.degreeType},
+                                 {"requirementTypeName": courseRequirement.requirementTypeName},
+                                 {"course_requirementName": courseRequirement.name},
+                                 {'title': title}
+                                 ]}}
+        ]
+        catalog_count = len(list(Catalog.objects().aggregate(pipeline)))
 
+        if catalog_count != 0:
+            found = True
+        else:
+            print ("That course could not be found.  Try again.")
+    """
+    MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate
+    function.  But I need the actual object to operate on.  The document includes the _id
+    value, so I perform yet another query, but this time NOT using the aggregate pipeline,
+    to return just the first object that comes back from looking for the manufacturer by
+    the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
+    knows the _id field as just 'id'."""
+    for catalog in Catalog.objects().aggregate(pipeline):
+        return Catalog.objects(id=catalog.get('_id')).first()
 
+def select_catalogCourse(session: Session):
+    found: bool = False
+    while not found:
+        course = select_course(Session)
+        catalog = select_Catalog(Session)
+        pipeline = [
+            {"$match": {"$and": [{"degreeType": catalog.degreeType},
+                                 {"requirementTypeName": catalog.requirementTypeName},
+                                 {"course_requirementName": catalog.name},
+                                 {'title': catalog.title},
+                                 {'abbreviation': course.abbreviation},
+                                 {'courseNum': course.courseNum}
+                                 ]}}
+        ]
+        catalogCourse_count = len(list(CatalogCourse.objects().aggregate(pipeline)))
 
+        if catalogCourse_count != 0:
+            found = True
+        else:
+            print ("That course could not be found.  Try again.")
+    """
+    MongoEngine returns an iterable of documents (Python dictionaries) from the aggregate
+    function.  But I need the actual object to operate on.  The document includes the _id
+    value, so I perform yet another query, but this time NOT using the aggregate pipeline,
+    to return just the first object that comes back from looking for the manufacturer by
+    the _id value.  MongoDB makes sure that _id is always unique.  Note that MongoENGINE
+    knows the _id field as just 'id'."""
+    for catalogCourse in CatalogCourse.objects().aggregate(pipeline):
+        return CatalogCourse.objects(id=catalogCourse.get('_id')).first()
 
 
 
@@ -266,7 +502,8 @@ if __name__ == '__main__':
     print('Starting in main.')
     # client = pymongo.MongoClient('mongodb+srv://eduardomartinez215:Supertruck1!@323-fall.kchj8.mongodb.net/?retryWrites=true&w=majority&appName=323-Fall', tlsCAFile=certifi.where())
     monitoring.register(CommandLogger())
-    mongoengine.connect('Demonstration', host='mongodb+srv://eduardomartinez215:Supertruck1!@323-fall.kchj8.mongodb.net/?retryWrites=true&w=majority&tlsInsecure=true&appName=323-Fall')
+    mongoengine.connect('Demonstration', host='mongodb+srv://shawnlin26:QkPN3GaNpM7blXXr@cluster0.rndwk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+
     db = mongoengine.connection.get_db()
     """This actually initiates a session at the PyMongo layer of the software architecture, but
     I cannot get MongoEngine to actually use it.  So I'm paving the way to do that eventually 
