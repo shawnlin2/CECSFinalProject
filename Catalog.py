@@ -2,13 +2,13 @@ from mongoengine import *
 from CourseRequirement import CourseRequirement
 
 class Catalog(Document):
-    title = StringField('title', min_length=0, max_length=30, required=True)
-    catalog_type = StringField('catalogType', required=True, max_length=80)
+    title = StringField(min_length=0, max_length=30, required=True)
+    catalog_type = StringField(required=True, max_length=80)
     catalog_courses = ListField(ReferenceField('CatalogCourse'))
     course_requirement = ReferenceField(CourseRequirement, reverse_delete_rule = 2)
-    course_requirementName = StringField('courseRequirementName',min_length = 1, max_length=80, unique=True, required=True)
-    degreeType = StringField('degreeType', min_length=10, max_length=80, required=True)
-    requirementTypeName = StringField('requirementTypeName', min_length=10, max_length=80)
+    course_requirementName = StringField(min_length = 1, max_length=80, unique=True, required=True)
+    degreeType = StringField(min_length=10, max_length=80, required=True)
+    requirementTypeName = StringField(min_length=10, max_length=80)
     meta = {
             "collection": "course_requirements",
             "indexes":[
@@ -19,10 +19,14 @@ class Catalog(Document):
                 }
             ]
            }
-    def __init__(self, title, catalog_type, *args, **kwargs):
+    def __init__(self, title, catalog_type, courseRequirement,courseRequirementName, degreeType, requirementTypeName, *args, **kwargs):
         super().__init__(**kwargs)
         self.title = title
         self.catalog_type = catalog_type
+        self.course_requirement = courseRequirement
+        self.course_requirementName = courseRequirementName
+        self.degreeType = degreeType
+        self.requirementTypeName = requirementTypeName
         #Removed the calls here as we can use an add function to put catalog_courses into the table
 
     def add_catalog_course(self, catalog_course):

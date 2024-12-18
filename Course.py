@@ -4,16 +4,16 @@ class Course(Document):
     """Course Offered within a Department and in line with a Degree Catalog."""
 
     # The number of the Course
-    courseNum = IntField(db_field = 'courseNum', min_value=10, max_value=999, primary_key=True)
+    courseNum = IntField(min_value=10, max_value=999)
 
     # The length of the Lecture
-    lectureHour = IntField(db_field = 'lectureHour', required=True)
+    lectureHour = IntField(required=True)
 
     # The name of the course
-    courseName = StringField(db_field = 'courseName', min_length=3, max_length=60, required=True)
+    courseName = StringField(min_length=3, max_length=60, required=True)
 
     # The units the course is worth
-    unit = IntField(db_field = 'unit', min_value=1, max_value=5, required=True)
+    unit = IntField(min_value=1, max_value=5, required=True)
 
     # Department that offers said course
     department = ReferenceField(Department, required=True, reverse_delete_rule=2)
@@ -49,7 +49,7 @@ class Course(Document):
         return (
             f"Course: {self.courseName}, Course number: {self.courseNum}, "
             f"Lecture hours: {self.lectureHour}, Units: {self.unit}, "
-            f"Department: {self.department.abbreviation if self.department else 'None'}"
+            f"Department: {self.department.abbreviation}"
         )
     def add_course_catalog(self, course_catalog):
         self.course_catologs.append(course_catalog)

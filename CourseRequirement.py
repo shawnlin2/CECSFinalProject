@@ -11,17 +11,17 @@ class CourseRequirement(Document):
     wouldn't be able to join degreeCatalog with the current table. Not really specifically the type but the primary
     key of degreeCatalog'''
     
-    abbreviation = StringField(db_field = 'abbreviation', min_length=1,max_length=16, required=True)
+    abbreviation = StringField( min_length=1,max_length=16, required=True)
     degreeCatalog = ReferenceField(DegreeCatalog, reverse_delete_rule=2)
     catalogs = ListField(ReferenceField('Catalog'))
-    degreeType = StringField(db_field = 'degreeType', min_length=10, max_length=80, required=True)
+    degreeType = StringField(min_length=10, max_length=80, required=True)
     requirementType = ReferenceField(RequirementType, reverse_delete_rule= 2 )
-    requirementTypeName = StringField(db_field = 'RequirementTypeName', min_length=10, max_length=80)
+    requirementTypeName = StringField(min_length=10, max_length=80)
     meta = {
             "collection": "course_requirements",
             "indexes":[
-                {"fields":["degreeType", 'requirementType', 'name'],
-                "name":"requirement_types_pk",
+                {"fields":["degreeType", 'requirementTypeName', 'name'],
+                "name":"course_requirements_pk",
                 "unique": True
                 
                 }

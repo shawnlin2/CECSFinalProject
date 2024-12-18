@@ -3,8 +3,8 @@ from mongoengine import *
 class Department(Document):
     """An organization within a college within a university that provides one or more
     degree programs to its students."""
-    name = StringField('name', min_length=3, max_length=80, required=True, unique=True)
-    abbreviation = StringField('abbreviation', min_length=1, max_length=16, required=True)
+    name = StringField(min_length=3, max_length=80, required=True, unique=True)
+    abbreviation = StringField(min_length=1, max_length=16, required=True)
     courses = ListField(ReferenceField('Course'))
     degreeCatalogs = ListField(ReferenceField('DegreeCatalog'))
     def __init__ (self, name, abbreviation,  **kwargs):
