@@ -1,4 +1,5 @@
 from mongoengine import *
+from Department import Department
 class Course(Document):
     """Course Offered within a Department and in line with a Degree Catalog."""
 
@@ -15,7 +16,7 @@ class Course(Document):
     unit = IntField(min_value=1, max_value=5, required=True)
 
     # Department that offers said course
-    department = ReferenceField('Department', required=True, reverse_delete_rule=2)
+    department = ReferenceField(Department, required=True, reverse_delete_rule=2)
     abbreviation = StringField(min_length=1, max_length=16, required=True)
 
     course_catologs = ListField(ReferenceField('CatalogCourse'))
