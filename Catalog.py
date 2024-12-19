@@ -3,7 +3,6 @@ from CourseRequirement import CourseRequirement
 
 class Catalog(Document):
     title = StringField(min_length=0, max_length=30, required=True)
-    catalog_type = StringField(required=True, max_length=80)
     catalog_courses = ListField(ReferenceField('CatalogCourse'))
     course_requirement = ReferenceField(CourseRequirement, reverse_delete_rule = 2)
     course_requirementName = StringField(min_length = 1, max_length=80, unique=True, required=True)
@@ -13,16 +12,18 @@ class Catalog(Document):
             "collection": "course_requirements",
             "indexes":[
                 {"fields":["degreeType", 'requirementTypeName', 'course_requirementName', 'title'],
-                "name":"requirement_types_pk",
+                "name":"Catalog_types_pk",
                 "unique": True
                 
                 }
-            ]
+            ],
+                "index_cls": False,
+            'allow_inheritance': True
            }
-    def __init__(self, title, catalog_type, courseRequirement,courseRequirementName, degreeType, requirementTypeName, *args, **kwargs):
+    
+    def __init__(self, title, courseRequirement,courseRequirementName, degreeType, requirementTypeName, **kwargs):
         super().__init__(**kwargs)
         self.title = title
-        self.catalog_type = catalog_type
         self.course_requirement = courseRequirement
         self.course_requirementName = courseRequirementName
         self.degreeType = degreeType
