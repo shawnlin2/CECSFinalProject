@@ -124,15 +124,20 @@ def add_degreeCatalog(session: Session):
 def add_CourseRequirement(session:Session):
     valid: bool = False
     while not valid:
-        degreeCat = select_degree_catalogs(session)
+        degreeCat:DegreeCatalog = select_degree_catalogs(session)
         degreeCat.save()
+        requirementType:RequirementType = select_requirementType(session)
         requirement_name = input("Enter the name of the requirement")
         total_points = input("Enter how many points the requirement is")
         try:
-            courseRequirement = CourseRequirement(total_points=total_points, name=requirement_name,degree_catalog=degreeCat, degreeType= degreeCat.degreeType)
+            courseRequirement = CourseRequirement(total_points=total_points, name=requirement_name,degreeCatalog=degreeCat, 
+                                                  degreeType= degreeCat.degree_type, requirementType= requirementType,
+                                                  requirementTypeName=requirementType.name, abbreviation=degreeCat.abbreviation)
             courseRequirement.save()
-            degreeCat.add_course_requirement()
+            degreeCat.add_course_requirement(courseRequirement)
             degreeCat.save()
+            requirementType.add_course_requirement(courseRequirement)
+            requirementType.save()
             valid = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
@@ -157,19 +162,20 @@ def add_Catalog(session:Session):
     while not vaild:
         course_requirement = select_courseRequirement(Session)
         title = input("Enter a name")
-        catalogType = input_int_range('Enter 1 for a Exclusive, 2 for an Inclusive, 3 for a Total')
+        catalogType = input_int_range('Enter 1 for a Exclusive, 2 for an Inclusive, 3 for a Total', 1, 3)
         try:
             if catalogType == 1:
                 catalog = Exclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName)
-            if catalogType == 2:
+            elif catalogType == 2:
                 catalog = Inclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName)
             else:
                 remaingUnit = input_int('Enter an amount of unit left')
-                catalog = Exclusive(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName
+                catalog = Total(title, course_requirement,course_requirement.name, course_requirement.degreeType, course_requirement.requirementTypeName
                                                     , remaingUnit)
             catalog.save()
             course_requirement.add_catalog(catalog)
             course_requirement.save()
+            vaild = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
         except ValidationError as VEND:
@@ -178,19 +184,19 @@ def add_Catalog(session:Session):
 def add_CatalogCourse(session:Session):
     vaild = False
     while not vaild:
-        course = select_course()
-        catalog = select_Catalog()
+        course = select_course(session)
+        catalog = select_Catalog(session)
 
         try:
             catalogCourse = CatalogCourse(catalog, course,catalog.title, 
                                           course.courseNum, course.abbreviation,
-                                          catalog.name, catalog.degreeType, 
-                                          catalog.requirementTypeName)
+                                          )
             catalogCourse.save()
             course.add_course_catalog(catalogCourse)
             course.save()
             catalog.add_catalog_course(catalogCourse)
             course.save()
+            vaild = True
         except NotUniqueError as NUID:
             print(f'You violated a uniqueness constraint: {NUID}.  Try again')
         except ValidationError as VEND:
@@ -399,19 +405,23 @@ def select_courseRequirement(session: Session):
     
 def select_course(session: Session):
     print("Searching for that specific course: ")
-    department_name = input("Enter the department name --> ")
-    course_num = input("Enter the course number --> ")
-    try:
-        department = Department.objects(name=department_name).first()
-        course = Course.objects(courseNum=course_num).first()
-
-        if department and course:
-            print("Course found")
-            return course
-        else:
-            print("No course was found with those details")
-    except Exception as e:
-        print(f"Error locating course: {e}")
+    found = False
+    while not found:
+        department_abbreviation = input("Enter the department abbreviation --> ")
+        course_num = input_int("Enter the course number --> ")
+        
+    
+        pipeline = [
+        {"$match": {"$and": [
+                                {'abbreviation': department_abbreviation},
+                                {'courseNum': course_num}
+                                ]}}
+        ]
+        catalog_count = len(list(Catalog.objects().aggregate(pipeline)))
+        if catalog_count > 0:
+            found = True
+    for catalog in Catalog.objects().aggregate(pipeline):
+        return catalog.objects(id=catalog.get('_id')).first()
 
 def select_degree_catalogs(session:Session):
     found: bool = False
@@ -419,7 +429,7 @@ def select_degree_catalogs(session:Session):
         
         degreetype = input('Enter a degree type')
         pipeline = [
-            {"$match": {"degreeType": degreetype}}
+            {"$match": {"degree_type": degreetype}}
         ]
         degreetype_count = len(list(DegreeCatalog.objects().aggregate(pipeline)))
 
@@ -444,9 +454,7 @@ def select_Catalog(session: Session):
         courseRequirement = select_courseRequirement(Session)
         title = input('Enter the title')
         pipeline = [
-            {"$match": {"$and": [{"degreeType": courseRequirement.degreeType},
-                                 {"requirementTypeName": courseRequirement.requirementTypeName},
-                                 {"course_requirementName": courseRequirement.name},
+            {"$match": {"$and": [
                                  {'title': title}
                                  ]}}
         ]
@@ -472,9 +480,7 @@ def select_catalogCourse(session: Session):
         course = select_course(Session)
         catalog = select_Catalog(Session)
         pipeline = [
-            {"$match": {"$and": [{"degreeType": catalog.degreeType},
-                                 {"requirementTypeName": catalog.requirementTypeName},
-                                 {"course_requirementName": catalog.name},
+            {"$match": {"$and": [
                                  {'title': catalog.title},
                                  {'abbreviation': course.abbreviation},
                                  {'courseNum': course.courseNum}

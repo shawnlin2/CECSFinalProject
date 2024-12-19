@@ -1,7 +1,7 @@
 from mongoengine import*
 
 class RequirementType(Document):
-    name = StringField(min_length=10, max_length=80, unique=True)
+    name = StringField(min_length=1, max_length=80, unique=True)
     course_requirements = ListField(ReferenceField('CourseRequirement'))
 
     meta = {

@@ -17,9 +17,9 @@ add_select = Menu('add select', 'Which type of object do you want to add?:', [
     Option("Degree Catalog", "add_degreeCatalog(sess)"),
     Option("Course", "add_course(sess)"),
     Option("Course Requirement", "add_CourseRequirement(sess)"),
-    Option("Requirement Type", "add_requirementType"),
+    Option("Requirement Type", "add_requirementType(sess)"),
     Option("Catalog", "add_Catalog(sess)"),
-    Option("Catalog Course", "add_CatalogCourse"),
+    Option("Catalog Course", "add_CatalogCourse(sess)"),
     Option("Exit", "pass")
 ])
 
@@ -29,9 +29,9 @@ delete_select = Menu('delete select', 'Which type of object do you want to delet
     Option("Degree Catalog", "delete_degreeCatalog(sess)"),
     Option("Course", "delete_course(sess)"),
     Option("Course Requirement", "delete_course_requirement(sess)"),
-    Option("Requirement Type", "delete_requirementType"),
+    Option("Requirement Type", "delete_requirementType(sess)"),
     Option("Catalog", "delete_Catalog(sess)"),
-    Option("Catalog Course", "delete_CatalogCourse"),
+    Option("Catalog Course", "delete_CatalogCourse(sess)"),
     Option("Exit", "pass")
 ])
 

@@ -5,20 +5,17 @@ from Catalog import Catalog
 from Course import Course
 
 class CatalogCourse(Document):
-    catalog = ReferenceField('Catalog', reverse_delete_rule=2)
-    course = ReferenceField('Course', reverse_delete_rule = 2)
-    title = StringField('title',min_length=10, max_length=30, required=True)
+    catalog = ReferenceField(Catalog, reverse_delete_rule=2)
+    course = ReferenceField(Course, reverse_delete_rule = 2)
+    title = StringField(min_length=10, max_length=30, required=True)
     abbreviation = StringField(min_length=1, max_length=16, required=True)
     courseNum = IntField(min_value=10, max_value=999, primary_key=True)
-    name = StringField('name', min_length=8 ,max_length=80, required= True)
-    course_requirementName = StringField(min_length = 1, max_length=80, unique=True, required=True)
-    degreeType = StringField(min_length=10, max_length=80, required=True)
-    requirementTypeName = StringField(min_length=10, max_length=80)
+    
 
     meta = {
             "collection": "course_requirements",
             "indexes":[
-                {"fields":["degreeType", 'course_requirementName', 'title', 'abbreviation', 'courseNum' ],
+                {"fields":['title', 'abbreviation', 'courseNum' ],
                 "name":"requirement_types_pk",
                 "unique": True
                 

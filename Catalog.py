@@ -5,19 +5,19 @@ class Catalog(Document):
     title = StringField(min_length=0, max_length=30, required=True)
     catalog_courses = ListField(ReferenceField('CatalogCourse'))
     course_requirement = ReferenceField(CourseRequirement, reverse_delete_rule = 2)
-    course_requirementName = StringField(min_length = 1, max_length=80, unique=True, required=True)
+    course_requirementName = StringField(min_length = 1, max_length=80, required=True)
     degreeType = StringField(min_length=10, max_length=80, required=True)
-    requirementTypeName = StringField(min_length=10, max_length=80)
+    requirementTypeName = StringField(min_length=1, max_length=80)
     meta = {
-            "collection": "course_requirements",
+            "collection": "catalogs",
             "indexes":[
-                {"fields":["degreeType", 'requirementTypeName', 'course_requirementName', 'title'],
-                "name":"Catalog_types_pk",
+                {"fields":['title'],
+                "name":"catalogs_pk",
                 "unique": True
                 
                 }
             ],
-                "index_cls": False,
+            "index_cls": False,
             'allow_inheritance': True
            }
     
@@ -36,4 +36,4 @@ class Catalog(Document):
         self.catalog_courses.remove(catalog_course)
     
     def __str__(self):
-        return f"Catalog Title - {self.title}, Catalog Type - {self.catalog_type}"
+        return f"Catalog Title - {self.title}"
