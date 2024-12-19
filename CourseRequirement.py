@@ -16,7 +16,7 @@ class CourseRequirement(Document):
     catalogs = ListField(ReferenceField('Catalog'))
     degreeType = StringField(min_length=10, max_length=80, required=True)
     requirementType = ReferenceField(RequirementType, reverse_delete_rule= 2 )
-    requirementTypeName = StringField(min_length=10, max_length=80)
+    requirementTypeName = StringField(min_length=1, max_length=80)
     meta = {
             "collection": "course_requirements",
             "indexes":[
@@ -27,7 +27,7 @@ class CourseRequirement(Document):
                 }
             ]
            }
-    def __init__(self, total_points, name, degreeCatalog, degreeType, requirementType, requirementTypeName, **kwargs):
+    def __init__(self, total_points, name, degreeCatalog, degreeType, requirementType, requirementTypeName, abbreviation, **kwargs):
         super().__init__(**kwargs)
         self.total_points = total_points
         self.name = name
@@ -35,6 +35,7 @@ class CourseRequirement(Document):
         self.degreeType = degreeType
         self.requirementType = requirementType
         self.requirementTypeName = requirementTypeName
+        self.abbreviation = abbreviation
 
     def clean(self):
         if len(self.name) == 0:

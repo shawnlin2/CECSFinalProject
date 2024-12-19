@@ -54,6 +54,6 @@ class Course(Document):
     def add_course_catalog(self, course_catalog):
         self.course_catologs.append(course_catalog)
     
-    def remove_course_catallog(self, course_catalog):
+    def remove_course_catalog(self, course_catalog):
         self.course_catologs.remove(course_catalog)
     
