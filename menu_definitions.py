@@ -14,19 +14,24 @@ menu_mainME = Menu('main', 'Please select one of the following options:', [
 #Add Instances
 add_select = Menu('add select', 'Which type of object do you want to add?:', [
     Option("Department", "add_department(sess)"),
+    Option("Degree Catalog", "add_degreeCatalog(sess)"),
     Option("Course", "add_course(sess)"),
-    Option("Catalog", "add_degreeCatalog(sess)"),
     Option("Course Requirement", "add_CourseRequirement(sess)"),
+    Option("Requirement Type", "add_requirementType"),
+    Option("Catalog", "add_Catalog(sess)"),
+    Option("Catalog Course", "add_CatalogCourse"),
     Option("Exit", "pass")
 ])
 
 #Delete Instances
 delete_select = Menu('delete select', 'Which type of object do you want to delete?:', [
     Option("Department", "delete_department(sess)"),
+    Option("Degree Catalog", "delete_degreeCatalog(sess)"),
     Option("Course", "delete_course(sess)"),
-    Option("Degree Catalog", "delete_degree_catalog(sess)"),
-    Option("Full Time Instructor", "delete_full_timer(sess)"),
-    Option("Part Time Instructor", "delete_part_timer(sess)"),
+    Option("Course Requirement", "delete_course_requirement(sess)"),
+    Option("Requirement Type", "delete_requirementType"),
+    Option("Catalog", "delete_Catalog(sess)"),
+    Option("Catalog Course", "delete_CatalogCourse"),
     Option("Exit", "pass")
 ])
 
@@ -52,6 +57,7 @@ select_select = Menu('select select', 'Which type of object do you want to selec
 update_select = Menu('update select', 'Which type of object do you want to update:', [
     Option("Update Department", "update_department(sess)"),
     Option("Update Course", "update_course(sess)"),
+    Option("Update Course Requirement", "update_courseRequirement(sess)"),
     Option("Exit", "pass")
 ])
 
