@@ -1,15 +1,11 @@
-import logging
-from datetime import date
 
-from mongoengine import NotUniqueError, OperationError, ValidationError
 from pymongo.client_session import ClientSession
 
-
+import certifi
 from menu_definitions import (menu_mainME, add_select, delete_select, list_select, select_select,
                               update_select, debug_select,
                               yes_no)
-# Note that until you import your SQLAlchemy declarative classes, such as Manufacturer, Python
-# will not execute that code, and SQLAlchemy will be unaware of the mapped table.
+
 from Menu import Menu
 from CommandLogger import CommandLogger, log
 from pymongo import monitoring, MongoClient
@@ -160,7 +156,7 @@ def add_requirementType(session:Session):
 def add_Catalog(session:Session):
     vaild = False
     while not vaild:
-        course_requirement = select_courseRequirement(Session)
+        course_requirement = select_course_requirement(session)
         title = input("Enter a name")
         catalogType = input_int_range('Enter 1 for a Exclusive, 2 for an Inclusive, 3 for a Total', 1, 3)
         try:
@@ -246,26 +242,26 @@ def delete_course(session: Session):
         course.delete()
 
 def delete_degreeCatalog(session: Session):
-    degreeCatalog = select_degree_catalogs(Session)
+    degreeCatalog = select_degree_catalog(session)
     if len(degreeCatalog.course_requirement) < 1:
         degreeCatalog.delete()
 
 def delete_catalog(session: Session):
-    catalog:Catalog = select_Catalog(Session)
+    catalog:Catalog = select_catalog(session)
     if len(catalog.catalog_courses) < 1:
         catalog.delete()
 
 def delete_course_requirement(session: Session):
-    courseRequirement:CourseRequirement = select_courseRequirement(Session)
+    courseRequirement:CourseRequirement = select_course_requirement(session)
     if len(courseRequirement.catalogs) < 1:
         courseRequirement.delete()
 
 def delete_catalogCourse(session:Session):
-    catalogCourse = select_catalogCourse()
+    catalogCourse = select_catalog_course()
     catalogCourse.delete()
 
 def delete_requirementType(session: Session):
-    requirementType:RequirementType = select_requirementType(Session)
+    requirementType:RequirementType = select_requirement_type(session)
     if len(requirementType.course_requirements) < 1:
         requirementType.delete()
 
@@ -300,7 +296,7 @@ def update_course(session: Session):
         course.save()
 
 def update_courseRequirement(session: Session):
-    courseRequirement = select_courseRequirement(session)
+    courseRequirement = select_course_requirement(session)
     newName = input(f'Current name is: {courseRequirement.name}.  Enter new name -->')
     pipeline = [
         {"$match": {"department": courseRequirement.name}}
@@ -337,7 +333,7 @@ def select_department(session: Session) -> Department:
     for department in Department.objects().aggregate(pipeline):
         return Department.objects(id=department.get('_id')).first()
 
-def select_requirementType(session: Session):
+def select_requirement_type(session: Session):
     found: bool = False
     while not found:
         requirmentName = input('Enter a requirementName')
@@ -375,7 +371,7 @@ def select_requirementType(session: Session):
 #             print("No office was found with thos details")
 #     except Exception as e:
 #         print(f"Error locating {e}")
-def select_courseRequirement(session: Session):
+def select_course_requirement(session: Session):
     found: bool = False
     while not found:
         degreeType = input("Degree type of the course requirement that you're looking for-->")
@@ -423,7 +419,7 @@ def select_course(session: Session):
     for catalog in Catalog.objects().aggregate(pipeline):
         return catalog.objects(id=catalog.get('_id')).first()
 
-def select_degree_catalogs(session:Session):
+def select_degree_catalog(session:Session):
     found: bool = False
     while not found:
         
@@ -448,10 +444,10 @@ def select_degree_catalogs(session:Session):
         return DegreeCatalog.objects(id=degreeCatalog.get('_id')).first()
 
 
-def select_Catalog(session: Session):
+def select_catalog(session: Session):
     found: bool = False
     while not found:
-        courseRequirement = select_courseRequirement(Session)
+        courseRequirement = select_course_requirement(session)
         title = input('Enter the title')
         pipeline = [
             {"$match": {"$and": [
@@ -474,11 +470,11 @@ def select_Catalog(session: Session):
     for catalog in Catalog.objects().aggregate(pipeline):
         return Catalog.objects(id=catalog.get('_id')).first()
 
-def select_catalogCourse(session: Session):
+def select_catalog_course(session: Session):
     found: bool = False
     while not found:
-        course = select_course(Session)
-        catalog = select_Catalog(Session)
+        course = select_course(session)
+        catalog = select_catalog(session)
         pipeline = [
             {"$match": {"$and": [
                                  {'title': catalog.title},
@@ -502,14 +498,51 @@ def select_catalogCourse(session: Session):
     for catalogCourse in CatalogCourse.objects().aggregate(pipeline):
         return CatalogCourse.objects(id=catalogCourse.get('_id')).first()
 
+def list_departments(session: Session):
+    departments: [Department] = Department.objects().order_by('+name')
+    for department in departments:
+        print(department)
+
+def list_courses(session: Session):
+    courses: [Course] = Course.objects().order_by('+courseNum')
+    for course in courses:
+        print(course)
+
+def list_degree_catalogs(session: Session):
+    degree_catalogs: [DegreeCatalog] = DegreeCatalog.objects().order_by('+abbreviation')
+    for degree_catalog in degree_catalogs:
+        print(degree_catalog)
+
+def list_course_requirements(session: Session):
+    course_requirements: [CourseRequirement] = CourseRequirement.objects().order_by('+name')
+    for course_requirement in course_requirements:
+        print(course_requirement)
+
+def list_catalog_courses(session: Session):
+    catalog_courses: [CatalogCourse] = CatalogCourse.objects().order_by('+title')
+    for catalog_course in catalog_courses:
+        print(catalog_course)
+
+def list_catalogs(session: Session):
+    catalogs: [Catalog] = Catalog.objects().order_by('+title')
+    for catalog in catalogs:
+        print(catalog)
+
+def list_requirement_types(session: Session):
+    requirement_types: [RequirementType] = RequirementType.objects().order_by('+name')
+    for requirement_type in requirement_types:
+        print(requirement_type)
+
 
 
 if __name__ == '__main__':
     print('Starting in main.')
     # client = pymongo.MongoClient('mongodb+srv://eduardomartinez215:Supertruck1!@323-fall.kchj8.mongodb.net/?retryWrites=true&w=majority&appName=323-Fall', tlsCAFile=certifi.where())
     monitoring.register(CommandLogger())
-    mongoengine.connect('Demonstration', host='mongodb+srv://shawnlin26:QkPN3GaNpM7blXXr@cluster0.rndwk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
-
+    # mongoengine.connect('Demonstration', host='mongodb+srv://shawnlin26:QkPN3GaNpM7blXXr@cluster0.rndwk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+    mongoengine.connect('MECluster',
+                        host='mongodb+srv://bryantieu41:AXW42FenGyxSnMGr@mecluster.zuxps.mongodb.net/?retryWrites=true&w=majority&appName=MECluster',
+                        tlsCAFile=certifi.where())
     db = mongoengine.connection.get_db()
     """This actually initiates a session at the PyMongo layer of the software architecture, but
     I cannot get MongoEngine to actually use it.  So I'm paving the way to do that eventually 
