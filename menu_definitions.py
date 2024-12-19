@@ -39,16 +39,23 @@ delete_select = Menu('delete select', 'Which type of object do you want to delet
 list_select = Menu('list select', 'Which type of object do you want to list?:', [
     Option("Departments", "list_departments(sess)"),
     Option("Courses", "list_courses(sess)"),
-    Option("Degree Catalogs", "list_degree_catalogs(sess)")
-
-
+    Option("Degree Catalogs", "list_degree_catalogs(sess)"),
+    Option("Course Requirement", "list_course_requirements(sess)"),
+    Option("Catalog Course", "list_catalog_courses(sess)"),
+    Option("Catalogs", "list_catalogs(sess)"),
+    Option("Requirement Type", "list_requirement_types(sess)"),
+    Option("Exit", "pass")
 ])
 
 # Select instances
 select_select = Menu('select select', 'Which type of object do you want to select:', [
     Option("Departments", "print(select_department(sess))"),
     Option("Courses", "print(select_course(sess))"),
-    Option("Degree Catalogs", "print(select_degree_catalogs(sess))"),
+    Option("Degree Catalogs", "print(select_degree_catalog(sess))"),
+    Option("Course Requirement", "print(select_course_requirement(sess))"),
+    Option("Requirement Type", "print(select_requirement_type(sess))"),
+    Option("Catalog", "print(select_catalog(sess))"),
+    Option("Catalog Course", "print(select_catalog_course(sess))"),
     Option("Exit", "pass")
 ])
 
